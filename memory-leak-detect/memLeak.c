@@ -77,13 +77,15 @@ static char firstBuffer[1024];
 typedef struct{
 	unsigned long cnt;
 	unsigned long free;
-	char trace[STACK_TRACE_DEPTH*10];
+	int tid;
+	char trace[STACK_TRACE_DEPTH*20];
 	UT_hash_handle hh;
 }stat_bt_t; 
 
 typedef struct{
 	void *key;
-	char trace[STACK_TRACE_DEPTH*10];
+	int tid;
+	char trace[STACK_TRACE_DEPTH*20];
 	UT_hash_handle hh;
 }stat_ptr_t;
 
@@ -103,11 +105,11 @@ typedef struct{
 	int next;
 }stat_node_t;
 
-stat_node_t *hash_table;
+static stat_node_t *hash_table;
 
-int first_node, last_node;
+static int first_node, last_node;
 
-int tid_to_record_bt;
+static int tid_to_record_bt;
 
 
 static void *virtual_alloc(size_t size)
@@ -150,7 +152,7 @@ static void print_malloc_stat(char *buf)
 	offset += sprintf(buf, "---------------------------------------------------------------------------\n");
 	buf += offset;
 
-	for(node = &hash_table[first_node]; node->next > 0; node = &hash_table[node->next])
+	for(node = &hash_table[first_node]; node->tid > 0; node = &hash_table[node->next])
 	{
 
 		//if(node->cnt < 100)
@@ -190,12 +192,12 @@ static void print_malloc_stat(char *buf)
 
 			for(s=users; s != NULL; s = s->hh.next)
 			{
-				if(s->cnt > s->free || print_all)
+				if((s->cnt != s->free) && (s->tid == tid_to_record_bt))
 				{
 					offset += sprintf(buf, "%-10ld %-10ld %-10.3f %-s\n", s->cnt,
 						s->free,(float)((s->cnt - s->free)* 1000.0 / elasp_time) ,s->trace);				
-					s->cnt = 0;
-					s->free = 0;
+					//s->cnt = 0;
+					//s->free = 0;
 				
 					buf += offset;
 
@@ -208,7 +210,11 @@ static void print_malloc_stat(char *buf)
 			offset += sprintf(buf,"********detail total : %d**************************************\n", i);
 			buf += offset;
 		}
-
+		
+		if(node->next < 0)
+		{
+			break;	
+		}
 	
 	}			
 
@@ -252,8 +258,10 @@ static void *malloc_stat_moniter(void *arg)
 
 					printf("tid to record bt changed to %d\n", tid);
 				}
-
-				print_all = 0;
+				
+				if(tid == 0){
+					print_all = 0;
+				}
 			}
 		}
 
@@ -369,9 +377,9 @@ static void record_retFunc_addr(void *ptr)
         int len;
         int i;
 	void *trace[STACK_TRACE_DEPTH + 3] = {0};
-	char bt_str[STACK_TRACE_DEPTH*10] = {0};
+	char bt_str[STACK_TRACE_DEPTH*20] = {0};
 
-	char addr[16] = {0};
+	char addr[20] = {0};
 	stat_bt_t *s = NULL;
 	stat_ptr_t *sp = NULL;
 
@@ -384,13 +392,20 @@ static void record_retFunc_addr(void *ptr)
 		
 	len = backtrace(trace, STACK_TRACE_DEPTH + 2);
 
+	if(len < 5){
+		/**
+		 * use syscall backtrace to get the stack info may fail duo to compile setting.
+		 */
+		goto exit;	
+	}
+	
 	for(i = 3; i < len; i++)
 	{
-		sprintf(addr, "0x%x ", trace[i]);
+		sprintf(addr, "%p ", trace[i]);
 
 		strcat(bt_str, addr);
 
-		memset(addr, 0, 16);	
+		memset(addr, 0, 20);	
 	}
 
 	pthread_rwlock_rdlock(&hash_str_lock);
@@ -412,6 +427,8 @@ static void record_retFunc_addr(void *ptr)
 		s->cnt = 1;
 		
 		s->free = 0;
+		
+		s->tid = tid;
 
 		pthread_rwlock_wrlock(&hash_str_lock);
 		HASH_ADD_STR(users, trace, s);
@@ -439,6 +456,8 @@ static void record_retFunc_addr(void *ptr)
 	
 		sp->key = ptr;
 	
+		sp->tid = tid;
+		
 		pthread_mutex_lock(&hash_ptr_lock);
 		HASH_ADD_PTR(conver, key, sp);
 		pthread_mutex_unlock(&hash_ptr_lock);
@@ -451,10 +470,11 @@ static void record_retFunc_addr(void *ptr)
 }
 
 
-static void update_retFunc_addr(void *ptr) 
+static int update_retFunc_addr(void *ptr) 
 {
 	stat_bt_t *s = NULL;
 	stat_ptr_t *sp = NULL;
+	int tid = 0;
 
 	pthread_mutex_lock(&hash_ptr_lock);
 	HASH_FIND_PTR(conver, &ptr, sp);
@@ -462,6 +482,7 @@ static void update_retFunc_addr(void *ptr)
 	
 	if(sp)
 	{
+		tid = sp->tid;
 		pthread_rwlock_rdlock(&hash_str_lock);
 		HASH_FIND_STR(users, sp->trace, s);
 		pthread_rwlock_unlock(&hash_str_lock);
@@ -484,6 +505,7 @@ static void update_retFunc_addr(void *ptr)
 
 	}						
 
+	return tid;
 }
 
 
@@ -521,7 +543,7 @@ static void malloc_record(void *ptr, size_t size)
 	} 
 
 
-	if(tid_to_record_bt == tid)
+	if(tid_to_record_bt != 0)
 	{
 		record_retFunc_addr(ptr);					
 	}
@@ -542,17 +564,18 @@ static void free_record(void *ptr)
 {
 	int tid = (int)syscall(SYS_gettid);
 
-	stat_node_t *node = &hash_table[tid];
+	stat_node_t *node;
+	
+	int tid2 = update_retFunc_addr(ptr);
+	
+	node = tid2 == 0 ? &hash_table[tid] : &hash_table[tid2];
 
-	if(node->tid == tid)
+	if(node->tid == (tid2 == 0 ? tid : tid2))
 	{
 		node->free++;
 		node->decrease += get_trunk_size(ptr); 
 		
 	}		
-
-	update_retFunc_addr(ptr);
-
 }
 
 
