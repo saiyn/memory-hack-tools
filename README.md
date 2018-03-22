@@ -50,8 +50,11 @@ More details behind the tool please check [this article](http://saiyn.github.io/
 <br />
 
 1. make 
+
 2. link with th libmemLeak.so at the very first place of your project, which will wrap all the malloc/realloc/calloc/free c library functions.
+
 3.start your program as mormal.
+
 4.shell `cat /var/malloc_stat` to check the heap memroy stat in terms of thread. Below is a screenshot.
 
 ![mreadm_0](http://omp8s6jms.bkt.clouddn.com/image/git/mreadm_0.png)
