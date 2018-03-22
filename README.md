@@ -49,9 +49,9 @@ More details behind the tool please check [this article](http://saiyn.github.io/
 
 <br />
 
-1. make 
+1.make 
 
-2. link with th libmemLeak.so at the very first place of your project, which will wrap all the malloc/realloc/calloc/free c library functions.
+2.link with th libmemLeak.so at the very first place of your project, which will wrap all the malloc,realloc,calloc,free c library functions.
 
 3.start your program as mormal.
 
