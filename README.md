@@ -49,19 +49,19 @@ More details behind the tool please check [this article](http://saiyn.github.io/
 
 <br />
 
-1.make 
+1.Make 
 
-2.link with th libmemLeak.so at the very first place of your project, which will wrap all the malloc,realloc,calloc,free c library functions.
+2.Link with th libmemLeak.so at the very first place of your project, which will wrap all the malloc,realloc,calloc,free c library functions.
 
-3.start your program as mormal.
+3.Start your program as mormal.
 
-4.shell `cat /var/malloc_stat` to check the heap memroy stat in terms of thread. Below is a screenshot.
+4.Shell `cat /var/malloc_stat` to check the heap memroy stat in terms of thread. Below is a screenshot.
 
 ![mreadm_0](http://omp8s6jms.bkt.clouddn.com/image/git/mreadm_0.png)
 
 > Note that, at this point, the tool have not record the backtrace of any malloc all, so the result above is somehow not very accurate.
 
-5.find which thread , e.g. thread_id has the biggest suspect and then shell `echo thread_id > /var/bt_proc` to stat the
+5.Find which thread , e.g. thread_id has the biggest suspect and then shell `echo thread_id > /var/bt_proc` to stat the
 heap memory in terms of backtrace. Below is another screenshot.
 
 ![mreadm_1](http://omp8s6jms.bkt.clouddn.com/image/git/mreadm_1.png)
@@ -71,13 +71,13 @@ heap memory in terms of backtrace. Below is another screenshot.
 
 > Note that, when we echo a thread id to /var/bt_proc, we are entring a "real" mode where the accracy of the tool is very impressive.
 
-6. after we echo a thread id to /var/bt_proc, if the thread do have the memory leak issue, we will see the very detail stack of the malloc all. 
+6. After we echo a thread id to /var/bt_proc, if the thread do have the memory leak issue, we will see the very detail stack of the malloc all. 
 
 ![mreadm_4](http://omp8s6jms.bkt.clouddn.com/image/git/mreadm_4.png)
 
 7. Last but not the least, the tool have a mode called 'print all' that we can see all what we have recorded. Since sometimes when we may get what is not what we expect, we need check if we have done the correct records. So when we shell `echo -2 > /var/bt_proc`, we entry the 'print all' mode. 
 
-And what't more, there are two different result of the 'print all' mode, one is before we echo a thread id to /var/bt_proc and the other is after which also can be called 'real print all' mode.
+ And what't more, there are two different result of the 'print all' mode, one is before we echo a thread id to /var/bt_proc and the   other is after which also can be called 'real print all' mode.
 
 ![mreadm_2](http://omp8s6jms.bkt.clouddn.com/image/git/mreadm_2.png)
 
