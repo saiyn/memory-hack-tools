@@ -81,6 +81,7 @@ heap memory in terms of backtrace. Below is another screenshot.
 
 ![mreadm_2](http://omp8s6jms.bkt.clouddn.com/image/git/mreadm_2.png)
 
+
 > From the screenshot above we can see that if we are not in 'print all' mode, the thread where malloc count is equal free won't be shown.
 
 ![mreadm_3](http://omp8s6jms.bkt.clouddn.com/image/git/mreadm_3.png)
