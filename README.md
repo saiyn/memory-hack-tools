@@ -8,7 +8,7 @@ various memory hack tools to help debug memory related issues
 
 <br />
 
-##  heap memory overwrite issue
+## 1.Heap Memory Overwrite Issue
 
 <br />
 
@@ -27,7 +27,7 @@ please check [this article](http://saiyn.github.io/homepage/2017/09/01/debug-DIY
 
 <br />
 
-## heap memory leak detect
+## 2.Heap Memory Leak Detect
 
 <br />
 
