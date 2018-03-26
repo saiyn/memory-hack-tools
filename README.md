@@ -59,7 +59,7 @@ More details behind the tool please check [this article](http://saiyn.github.io/
 
 ![mreadm_0](http://omp8s6jms.bkt.clouddn.com/image/git/mreadm_0.png)
 
-> Note that, at this point, the tool have not record the backtrace of any malloc all, so the result below is somehow not very accurate.
+> Note that, at this point, the tool have not record the backtrace of any malloc all, so the result above is somehow not very accurate.
 
 5.find which thread , e.g. thread_id has the biggest suspect and then shell `echo thread_id > /var/bt_proc` to stat the
 heap memory in terms of backtrace. Below is another screenshot.
