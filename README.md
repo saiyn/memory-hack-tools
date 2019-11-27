@@ -57,14 +57,15 @@ More details behind the tool please check [this article](http://saiyn.github.io/
 
 4.Shell `cat /var/malloc_stat` to check the heap memroy stat in terms of thread. Below is a screenshot.
 
-![mreadm_0](http://omp8s6jms.bkt.clouddn.com/image/git/mreadm_0.png)
+![mreadm_0](https://raw.githubusercontent.com/saiyn/homepage/gh-pages/images/mreadm_0.png)
 
 > Note that, at this point, the tool have not record the backtrace of any malloc all, so the result above is somehow not very accurate.
 
 5.Find which thread , e.g. thread_id has the biggest suspect and then shell `echo thread_id > /var/bt_proc` to stat the
 heap memory in terms of backtrace. Below is another screenshot.
 
-![mreadm_1](http://omp8s6jms.bkt.clouddn.com/image/git/mreadm_1.png)
+
+![mreadm_1](https://raw.githubusercontent.com/saiyn/homepage/gh-pages/images/mreadm_1.png)
 
  Compare about the two result above, we can find that the misinformation is much less.
 
@@ -73,18 +74,21 @@ heap memory in terms of backtrace. Below is another screenshot.
 
 6. After we echo a thread id to /var/bt_proc, if the thread do have the memory leak issue, we will see the very detail stack of the malloc all. 
 
-![mreadm_4](http://omp8s6jms.bkt.clouddn.com/image/git/mreadm_4.png)
+
+![mreadm_4](https://raw.githubusercontent.com/saiyn/homepage/gh-pages/images/mreadm_4.png)
 
 7. Last but not the least, the tool have a mode called 'print all' that we can see all what we have recorded. Since sometimes when we may get what is not what we expect, we need check if we have done the correct records. So when we shell `echo -2 > /var/bt_proc`, we entry the 'print all' mode. 
 
  And what't more, there are two different result of the 'print all' mode, one is before we echo a thread id to /var/bt_proc and the   other is after which also can be called 'real print all' mode.
 
-![mreadm_2](http://omp8s6jms.bkt.clouddn.com/image/git/mreadm_2.png)
+
+![mreadm_2](https://raw.githubusercontent.com/saiyn/homepage/gh-pages/images/mreadm_2.png)
 
 
 > From the screenshot above we can see that if we are not in 'print all' mode, the thread where malloc count is equal free won't be shown.
 
-![mreadm_3](http://omp8s6jms.bkt.clouddn.com/image/git/mreadm_3.png)
+
+![mreadm_3](https://raw.githubusercontent.com/saiyn/homepage/gh-pages/images/mreadm_3.png)
 
 > From the screenshot above we can see that if we are not in 'real print all' mode, the backtrace of the thread where malloc count is equal the free won't be shown.
 
